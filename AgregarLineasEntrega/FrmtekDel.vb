@@ -36,7 +36,7 @@ Public Class FrmtekDel
 
                 Err.Raise(-1, 1, "")
             End If
-
+            '"que pedo"
             '--- Referencia de Forma
             setForm(csFormUID)
 
