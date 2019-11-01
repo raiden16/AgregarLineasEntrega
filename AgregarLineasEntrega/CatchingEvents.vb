@@ -96,7 +96,7 @@ Friend Class CatchingEvents
             If loMenusRoot.Exists("DEL11") Then
                 loMenusRoot.RemoveEx("DEL11")
             End If
-            loMenuItem = loMenusRoot.Add("DEL11", "Super Entregas", SAPbouiCOM.BoMenuType.mt_STRING, loMenusRoot.Count)
+            loMenuItem = loMenusRoot.Add("DEL11", "Escanear Facturas", SAPbouiCOM.BoMenuType.mt_STRING, loMenusRoot.Count)
             loMenus = loMenuItem.SubMenus
 
             loForm.Freeze(False)
