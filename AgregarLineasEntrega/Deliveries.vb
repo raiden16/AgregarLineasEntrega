@@ -164,7 +164,7 @@
 
                 Else
 
-                    stQueryH = "Select ""U_Delivery"" as ""DocEntry"" from ""@EP_EN1"" where ""U_DocNum""=" & Factura
+                    stQueryH = "Select ""U_Delivery"" as ""DocEntry"" from ""@EP_EN1"" where ""U_DocNum""=" & Factura & " and ""U_Status""<>'Cambio'"
                     oRecSetH.DoQuery(stQueryH)
 
                     If oRecSetH.RecordCount > 0 Then
