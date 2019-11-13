@@ -222,6 +222,7 @@ Public Class FrmtekDel
 
             oCombo.ValidValues.Add("", "")
             oCombo.ValidValues.Add("Escaneado", "Escaneado")
+            oCombo.ValidValues.Add("Cambio", "Cambio")
             oCombo.ValidValues.Add("Retenido", "Retenido")
             oCombo.ValidValues.Add("Cancelado", "Cancelado")
 

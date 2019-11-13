@@ -278,7 +278,7 @@
 
         Catch ex As Exception
 
-            SBOApplication.MessageBox("Deliveries, fallo la funcion SearchInvoices: " & ex.Message)
+            SBOApplication.MessageBox("Deliveries, fallo la funcion SearchDeliveries: " & ex.Message)
 
         End Try
 
@@ -319,6 +319,7 @@
 
             oCombo.ValidValues.Add("", "")
             oCombo.ValidValues.Add("Escaneado", "Escaneado")
+            oCombo.ValidValues.Add("Cambio", "Cambio")
             oCombo.ValidValues.Add("Retenido", "Retenido")
             oCombo.ValidValues.Add("Cancelado", "Cancelado")
 
@@ -401,7 +402,48 @@
 
         Catch ex As Exception
 
-            SBOApplication.MessageBox("Deliveries, fallo creacion de UDO addDelivery: " & ex.Message)
+            SBOApplication.MessageBox("Deliveries, fallo creacion de UDO updateDelivery: " & ex.Message)
+
+        End Try
+
+    End Function
+
+
+    Public Function BeforeAndAfter(ByVal FormUID As String, ByVal Action As Integer)
+
+        Dim stQueryH As String
+        Dim oRecSetH As SAPbobsCOM.Recordset
+        Dim oForm As SAPbouiCOM.Form
+        Dim Entrega As String
+
+        Try
+
+            oRecSetH = SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
+            oForm = SBOApplication.Forms.Item(FormUID)
+
+            If Action = 1 Then
+
+                Entrega = oForm.DataSources.UserDataSources.Item("dsDocN").Value - 1
+
+            ElseIf Action = 2 Then
+
+                Entrega = oForm.DataSources.UserDataSources.Item("dsDocN").Value + 1
+
+            End If
+
+            stQueryH = "Select * from ""@EP_EN0"" where ""Code""=" & Entrega
+            oRecSetH.DoQuery(stQueryH)
+
+            If oRecSetH.RecordCount > 0 Then
+
+                findDelivery(FormUID, Entrega)
+
+            End If
+
+
+        Catch ex As Exception
+
+            SBOApplication.MessageBox("Deliveries, fallo la funcion BeforeAndAfter: " & ex.Message)
 
         End Try
 

@@ -246,6 +246,16 @@ Friend Class CatchingEvents
                             oDeliveries = New Deliveries
                             oDeliveries.updateDelivery(FormUID, csDirectory)
 
+                        Case "15"
+
+                            oDeliveries = New Deliveries
+                            oDeliveries.BeforeAndAfter(FormUID, 1)
+
+                        Case "16"
+
+                            oDeliveries = New Deliveries
+                            oDeliveries.BeforeAndAfter(FormUID, 2)
+
                     End Select
 
                 Case SAPbouiCOM.BoEventTypes.et_KEY_DOWN
