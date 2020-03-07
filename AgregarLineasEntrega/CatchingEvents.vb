@@ -96,7 +96,11 @@ Friend Class CatchingEvents
             If loMenusRoot.Exists("DEL11") Then
                 loMenusRoot.RemoveEx("DEL11")
             End If
+            If loMenusRoot.Exists("DEL12") Then
+                loMenusRoot.RemoveEx("DEL12")
+            End If
             loMenuItem = loMenusRoot.Add("DEL11", "Escanear Facturas", SAPbouiCOM.BoMenuType.mt_STRING, loMenusRoot.Count)
+            loMenuItem = loMenusRoot.Add("DEL12", "Buscar Facturas", SAPbouiCOM.BoMenuType.mt_STRING, loMenusRoot.Count)
             loMenus = loMenuItem.SubMenus
 
             loForm.Freeze(False)
@@ -127,10 +131,13 @@ Friend Class CatchingEvents
             lofilters = New SAPbouiCOM.EventFilters
             lofilter = lofilters.Add(SAPbouiCOM.BoEventTypes.et_ITEM_PRESSED)
             lofilter.AddEx("tekDelivery") '////// FORMA UDO DE ENTREGAS
+            lofilter.AddEx("tekSearchDev") '////// FORMA UDO DE ENTREGAS
             lofilter = lofilters.Add(SAPbouiCOM.BoEventTypes.et_KEY_DOWN)
             lofilter.AddEx("tekDelivery") '////// FORMA UDO DE ENTREGAS
+            lofilter.AddEx("tekSearchDev") '////// FORMA UDO DE ENTREGAS
             lofilter = lofilters.Add(SAPbouiCOM.BoEventTypes.et_COMBO_SELECT)
             lofilter.AddEx("tekDelivery") '////// FORMA UDO DE ENTREGAS
+            lofilter.AddEx("tekSearchDev") '////// FORMA UDO DE ENTREGAS
             lofilter = lofilters.Add(SAPbouiCOM.BoEventTypes.et_MENU_CLICK)
 
             SBOApplication.SetFilter(lofilters)
@@ -161,6 +168,7 @@ Friend Class CatchingEvents
     '//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     Private Sub SBOApplication_MenuEvent(ByRef pVal As SAPbouiCOM.MenuEvent, ByRef BubbleEvent As Boolean) Handles SBOApplication.MenuEvent
         Dim otekDel As FrmtekDel
+        Dim otekSch As FrmtekSch
 
         Try
             '//ANTES DE PROCESAR SBO
@@ -171,6 +179,11 @@ Friend Class CatchingEvents
 
                         otekDel = New FrmtekDel
                         otekDel.openForm(csDirectory)
+
+                    Case "DEL12"
+
+                        otekSch = New FrmtekSch
+                        otekSch.openForm(csDirectory)
 
                 End Select
             End If
@@ -200,6 +213,10 @@ Friend Class CatchingEvents
                     '////////////////FORMA PARA ACTIVAR LICENCIA
                     Case "tekDelivery"
                         FrmEntregaSBOControllerAfter(FormUID, pVal)
+
+                    Case "tekSearchDev"
+                        FrmSearchSBOControllerAfter(FormUID, pVal)
+
                 End Select
             End If
 
@@ -236,17 +253,89 @@ Friend Class CatchingEvents
                             oDeliveries = New Deliveries
                             oDeliveries.addDelivery(FormUID, csDirectory)
 
-                        Case "13"
+                    End Select
+
+                Case SAPbouiCOM.BoEventTypes.et_KEY_DOWN
+
+                    Select Case pVal.ItemUID
+
+                        Case "11"
+
+                            Select Case pVal.CharPressed
+
+                                Case "9"
+
+                                    Select Case pVal.ColUID
+
+                                        Case "Estatus"
+
+                                            oDataTable = oGrid.DataTable
+
+                                            Lineduplicadas(oDataTable, pVal.Row)
+                                            SearchInvoices(oDataTable, pVal.Row)
+                                            ExistInvoices(oDataTable, pVal.Row)
+
+                                    End Select
+
+                            End Select
+
+                    End Select
+
+                Case SAPbouiCOM.BoEventTypes.et_COMBO_SELECT
+
+                    Select Case pVal.ItemUID
+
+                        Case "1"
+
+                            stQueryH = "Select ""U_Truck"" as ""Camion"" from ""@EP_EN2"" where ""Name""='" & oForm.DataSources.UserDataSources.Item("dsDriver").Value & "'"
+                            oRecSetH.DoQuery(stQueryH)
+
+                            oForm.DataSources.UserDataSources.Item("dsTruck").Value = oRecSetH.Fields.Item("Camion").Value
+
+                    End Select
+
+            End Select
+
+        Catch ex As Exception
+            SBOApplication.MessageBox("FrmEntregaSBOControllerAfter. Error en forma de Panel General. " & ex.Message)
+        Finally
+
+        End Try
+    End Sub
+
+
+    Private Sub FrmSearchSBOControllerAfter(ByVal FormUID As String, ByVal pVal As SAPbouiCOM.ItemEvent)
+
+        Dim oDeliveries As Deliveries
+        Dim oGrid As SAPbouiCOM.Grid
+        Dim oForm As SAPbouiCOM.Form
+        Dim oDataTable As SAPbouiCOM.DataTable
+        Dim stQueryH As String
+        Dim oRecSetH As SAPbobsCOM.Recordset
+        oForm = SBOApplication.Forms.Item(FormUID)
+        oGrid = oForm.Items.Item("11").Specific
+
+        Try
+
+            oRecSetH = SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
+
+            Select Case pVal.EventType
+
+                Case SAPbouiCOM.BoEventTypes.et_ITEM_PRESSED
+
+                    Select Case pVal.ItemUID
+
+                        Case "12"
 
                             oDeliveries = New Deliveries
                             oDeliveries.SearchDeliveries(FormUID)
 
-                        Case "14"
+                        Case "13"
 
                             oDeliveries = New Deliveries
                             oDeliveries.updateDelivery(FormUID, csDirectory)
 
-                        Case "15"
+                        Case "14"
 
                             oDeliveries = New Deliveries
                             oDeliveries.BeforeAndAfter(FormUID, 1)
@@ -346,13 +435,15 @@ Friend Class CatchingEvents
 
     Public Function SearchInvoices(ByVal oDataTable As SAPbouiCOM.DataTable, ByVal Limite As Integer)
 
-        Dim stQueryH As String
-        Dim oRecSetH As SAPbobsCOM.Recordset
-        Dim Factura, Entrega As String
+        Dim stQueryH, stQueryH2, stQueryH3 As String
+        Dim oRecSetH, oRecSetH2, oRecSetH3 As SAPbobsCOM.Recordset
+        Dim Factura, Entrega, Factura2 As String
 
         Try
 
             oRecSetH = SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
+            oRecSetH2 = SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
+            oRecSetH3 = SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
 
             If oDataTable.GetValue("Factura", Limite) Is Nothing Or oDataTable.GetValue("Factura", Limite) = "" Then
 
@@ -362,10 +453,41 @@ Friend Class CatchingEvents
                 stQueryH = "Select ""U_Delivery"" as ""DocEntry"" from ""@EP_EN1"" where ""U_DocNum""=" & Factura & " and ""U_Status""<>'Cambio'"
                 oRecSetH.DoQuery(stQueryH)
 
+                stQueryH2 = "Select ""DocNum"" as ""DocEntry"" from ""@EP_EN"" where ""U_DocNum""=" & Factura & " and ""Canceled""='N'"
+                oRecSetH2.DoQuery(stQueryH2)
+
+                stQueryH3 = "Select T7.""DocNum"" as ""Factura"", T8.""U_Delivery"" as ""DocEntry"" 
+                            from ""OINV"" T0
+                            Inner Join ""INV1"" T1 on T1.""DocEntry""=T0.""DocEntry""
+                            Inner Join ""RDR1"" T2 on T2.""DocEntry""=T1.""BaseEntry"" and T2.""ObjType""=T1.""BaseType"" and T2.""LineNum""=T1.""BaseLine"" and T2.""ItemCode""=T1.""ItemCode""
+                            Inner Join ""ORDR"" T3 on T3.""DocEntry""=T2.""DocEntry""
+                            Inner Join ""ORIN"" T4 on T4.""U_ORDR""=T3.""DocNum""
+                            Inner Join ""RIN1"" T5 on T5.""DocEntry""=T4.""DocEntry""
+                            Inner Join ""INV1"" T6 on T6.""DocEntry""=T5.""BaseEntry"" and T6.""ObjType""=T5.""BaseType"" and T6.""LineNum""=T5.""BaseLine"" and T6.""ItemCode""=T5.""ItemCode""
+                            Inner Join ""OINV"" T7 on T7.""DocEntry""=T6.""DocEntry""
+                            Inner Join ""@EP_EN1"" T8 on T8.""U_DocNum""=T7.""DocNum""
+                            where T0.""DocNum""=" & Factura
+                oRecSetH3.DoQuery(stQueryH3)
+
                 If oRecSetH.RecordCount > 0 Then
 
                     Entrega = oRecSetH.Fields.Item("DocEntry").Value
                     SBOApplication.MessageBox("La factura " & Factura & " ya fue registrada en la entrega " & Entrega & ".")
+
+                End If
+
+                If oRecSetH2.RecordCount > 0 Then
+
+                    Entrega = oRecSetH2.Fields.Item("DocEntry").Value
+                    SBOApplication.MessageBox("La factura " & Factura & " ya fue registrada en la entrega " & Entrega & " del complemento pasado.")
+
+                End If
+
+                If oRecSetH3.RecordCount > 0 Then
+
+                    Entrega = oRecSetH3.Fields.Item("DocEntry").Value
+                    Factura2 = oRecSetH3.Fields.Item("Factura").Value
+                    SBOApplication.MessageBox("La factura " & Factura & " esta sustituyendo a la factura " & Factura2 & " la cual ya fue registrada y entregada en el numero de entrega " & Entrega & ".")
 
                 End If
 

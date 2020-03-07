@@ -21,7 +21,7 @@
         Dim oDataTable As SAPbouiCOM.DataTable
         Dim stQueryH, stQueryH2, stQueryH3 As String
         Dim oRecSetH, oRecSetH2, oRecSetH3 As SAPbobsCOM.Recordset
-        Dim Driver, User, Truck, DocNum, Invoice, Estatus, IFechas, DFechas, SFechas As String
+        Dim Driver, User, Truck, DocNum, Invoice, Estatus, IFechas, DFechas, SFechas, LDriver As String
         Dim DFecha, IFecha, SFecha As Date
         Dim Code, Linea As Integer
 
@@ -65,6 +65,10 @@
                         oRecSetH.DoQuery(stQueryH)
                         Code = oRecSetH.Fields.Item("DocEntry").Value
 
+                        stQueryH = "Select ""Code"" from ""@EP_EN2"" where ""Name""='" & Driver & "'"
+                        oRecSetH.DoQuery(stQueryH)
+                        LDriver = oRecSetH.Fields.Item("Code").Value
+
                         Invoice = oDataTable.GetValue("Factura", i)
                         IFecha = Convert.ToDateTime(oDataTable.GetValue("Fecha Factura", i))
                         SFecha = Convert.ToDateTime(oDataTable.GetValue("Fecha Escaneo", i))
@@ -72,7 +76,7 @@
                         IFechas = IFecha.Year & "-" & IFecha.Month & "-" & IFecha.Day
                         SFechas = SFecha.Year & "-" & SFecha.Month & "-" & SFecha.Day
 
-                        stQueryH2 = "INSERT INTO ""@EP_EN1"" VALUES (" & Code & "," & Code & "," & DocNum & "," & Linea & "," & Invoice & ",'" & IFechas & "','" & SFechas & "','" & Estatus & "')"
+                        stQueryH2 = "INSERT INTO ""@EP_EN1"" VALUES (" & Code & "," & Code & "," & DocNum & "," & Linea & "," & Invoice & ",'" & IFechas & "','" & SFechas & "','" & Estatus & "','" & LDriver & "')"
                         oRecSetH2.DoQuery(stQueryH2)
 
                     End If
@@ -150,11 +154,14 @@
 
         Dim stQueryH As String
         Dim oRecSetH As SAPbobsCOM.Recordset
+        Dim stQueryH2 As String
+        Dim oRecSetH2 As SAPbobsCOM.Recordset
         Dim Factura, Entrega As String
 
         Try
 
             oRecSetH = SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
+            oRecSetH2 = SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
 
             For i = 0 To oDataTable.Rows.Count - 1
 
@@ -167,10 +174,21 @@
                     stQueryH = "Select ""U_Delivery"" as ""DocEntry"" from ""@EP_EN1"" where ""U_DocNum""=" & Factura & " and ""U_Status""<>'Cambio'"
                     oRecSetH.DoQuery(stQueryH)
 
+                    stQueryH2 = "Select ""DocNum"" as ""DocEntry"" from ""@EP_EN"" where ""U_DocNum""=" & Factura & " and ""Canceled""='N'"
+                    oRecSetH2.DoQuery(stQueryH2)
+
                     If oRecSetH.RecordCount > 0 Then
 
                         Entrega = oRecSetH.Fields.Item("DocEntry").Value
                         SBOApplication.MessageBox("La factura " & Factura & " ya fue registrada en la entrega " & Entrega & ", por favor quita esta factura que se encuentra en la linea " & i + 1 & ".")
+                        Registradas = Registradas + 1
+
+                    End If
+
+                    If oRecSetH2.RecordCount > 0 Then
+
+                        Entrega = oRecSetH2.Fields.Item("DocEntry").Value
+                        SBOApplication.MessageBox("La factura " & Factura & " ya fue registrada en la entrega " & Entrega & " del complemento pasado, por favor quita esta factura que se encuentra en la linea " & i + 1 & ".")
                         Registradas = Registradas + 1
 
                     End If
@@ -301,11 +319,11 @@
             stQuery = "Select ""Name"" as ""Entrega"",""U_CreateDate"" as ""Fecha"",""U_Driver"" as ""Chofer"",""U_User"",""U_Truck"" as ""Camion"" from ""@EP_EN0"" where ""Code""=" & Entrega
             oRecSet.DoQuery(stQuery)
 
-            coForm.DataSources.UserDataSources.Item("dsDocN").Value = oRecSet.Fields.Item("Entrega").Value
-            coForm.DataSources.UserDataSources.Item("dsDate").Value = oRecSet.Fields.Item("Fecha").Value
-            coForm.DataSources.UserDataSources.Item("dsDriver").Value = oRecSet.Fields.Item("Chofer").Value
-            coForm.DataSources.UserDataSources.Item("dsUser").Value = oRecSet.Fields.Item("U_User").Value
-            coForm.DataSources.UserDataSources.Item("dsTruck").Value = oRecSet.Fields.Item("Camion").Value
+            coForm.DataSources.UserDataSources.Item("dsDocNs").Value = oRecSet.Fields.Item("Entrega").Value
+            coForm.DataSources.UserDataSources.Item("dsDates").Value = oRecSet.Fields.Item("Fecha").Value
+            coForm.DataSources.UserDataSources.Item("dsDrivers").Value = oRecSet.Fields.Item("Chofer").Value
+            coForm.DataSources.UserDataSources.Item("dsUsers").Value = oRecSet.Fields.Item("U_User").Value
+            coForm.DataSources.UserDataSources.Item("dsTrucks").Value = oRecSet.Fields.Item("Camion").Value
 
             oGrid = coForm.Items.Item("11").Specific
 
@@ -346,7 +364,7 @@
 
     Public Function updateDelivery(ByVal FormUID As String, ByVal csDirectory As String)
 
-        Dim otekDel As FrmtekDel
+        Dim otekSch As FrmtekSch
         Dim coForm As SAPbouiCOM.Form
         Dim oGrid As SAPbouiCOM.Grid
         Dim oDataTable As SAPbouiCOM.DataTable
@@ -361,9 +379,9 @@
             oRecSetH2 = SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
             oRecSetH3 = SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
 
-            Driver = coForm.DataSources.UserDataSources.Item("dsDriver").Value
-            Truck = coForm.DataSources.UserDataSources.Item("dsTruck").Value
-            DocNum = coForm.DataSources.UserDataSources.Item("dsDocN").Value
+            Driver = coForm.DataSources.UserDataSources.Item("dsDrivers").Value
+            Truck = coForm.DataSources.UserDataSources.Item("dsTrucks").Value
+            DocNum = coForm.DataSources.UserDataSources.Item("dsDocNs").Value
 
             oGrid = coForm.Items.Item("11").Specific
             oDataTable = oGrid.DataTable
@@ -395,8 +413,8 @@
                 oRecSetH3.DoQuery(stQueryH3)
                 stQueryH3 = "UPDATE ""@EP_EN0"" SET ""U_Truck""='" & Truck & "' where ""Code""=" & DocNum
                 oRecSetH3.DoQuery(stQueryH3)
-                otekDel = New FrmtekDel
-                otekDel.openForm(csDirectory)
+                otekSch = New FrmtekSch
+                otekSch.openForm(csDirectory)
 
             End If
 
@@ -421,13 +439,15 @@
             oRecSetH = SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
             oForm = SBOApplication.Forms.Item(FormUID)
 
+            '---Agregar cuando el docnum este vacio---
+
             If Action = 1 Then
 
-                Entrega = oForm.DataSources.UserDataSources.Item("dsDocN").Value - 1
+                Entrega = oForm.DataSources.UserDataSources.Item("dsDocNs").Value - 1
 
             ElseIf Action = 2 Then
 
-                Entrega = oForm.DataSources.UserDataSources.Item("dsDocN").Value + 1
+                Entrega = oForm.DataSources.UserDataSources.Item("dsDocNs").Value + 1
 
             End If
 

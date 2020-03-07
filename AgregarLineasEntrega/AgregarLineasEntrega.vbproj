@@ -75,6 +75,7 @@
     <Compile Include="CatchingEvents.vb" />
     <Compile Include="CommonFunc.vb" />
     <Compile Include="Deliveries.vb" />
+    <Compile Include="FrmtekSch.vb" />
     <Compile Include="SubMain.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
