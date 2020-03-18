@@ -328,7 +328,7 @@
             oGrid = coForm.Items.Item("11").Specific
 
             oRecSet2 = SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
-            stQuery2 = "Select 1 as ""#"",""U_DocNum"" as ""Factura"",""U_DocDate"" as ""Fecha Factura"",""U_ScanDate"" as ""Fecha Escaneo"",""U_Status"" as ""Estatus"" from ""@EP_EN1"" where ""U_Delivery""='" & Entrega & "' order by ""U_LineNum"""
+            stQuery2 = "Select 1 as ""#"",""U_DocNum"" as ""Factura"",""U_DocDate"" as ""Fecha Factura"",""U_ScanDate"" as ""Fecha Escaneo"",""U_Status"" as ""Estatus"" from ""@EP_EN1"" where ""U_Delivery""='" & Entrega & "' order by to_int(""U_LineNum"") asc"
             oGrid.DataTable.ExecuteQuery(stQuery2)
             oRecSet2.DoQuery(stQuery2)
 
@@ -441,22 +441,54 @@
 
             '---Agregar cuando el docnum este vacio---
 
-            If Action = 1 Then
+            If oForm.DataSources.UserDataSources.Item("dsDocNs").Value = Nothing Then
 
-                Entrega = oForm.DataSources.UserDataSources.Item("dsDocNs").Value - 1
+                If Action = 1 Then
 
-            ElseIf Action = 2 Then
+                    stQueryH = "Select top 1 * from ""@EP_EN0"" order by to_int(""Code"") desc"
+                    oRecSetH.DoQuery(stQueryH)
 
-                Entrega = oForm.DataSources.UserDataSources.Item("dsDocNs").Value + 1
+                    If oRecSetH.RecordCount > 0 Then
 
-            End If
+                        Entrega = oRecSetH.Fields.Item("Code").Value
+                        findDelivery(FormUID, Entrega)
 
-            stQueryH = "Select * from ""@EP_EN0"" where ""Code""=" & Entrega
-            oRecSetH.DoQuery(stQueryH)
+                    End If
 
-            If oRecSetH.RecordCount > 0 Then
+                ElseIf Action = 2 Then
 
-                findDelivery(FormUID, Entrega)
+                    stQueryH = "Select top 1 * from ""@EP_EN0"" order by to_int(""Code"") desc"
+                    oRecSetH.DoQuery(stQueryH)
+
+                    If oRecSetH.RecordCount > 0 Then
+
+                        Entrega = oRecSetH.Fields.Item("Code").Value
+                        findDelivery(FormUID, Entrega)
+
+                    End If
+
+                End If
+
+            Else
+
+                If Action = 1 Then
+
+                    Entrega = oForm.DataSources.UserDataSources.Item("dsDocNs").Value - 1
+
+                ElseIf Action = 2 Then
+
+                    Entrega = oForm.DataSources.UserDataSources.Item("dsDocNs").Value + 1
+
+                End If
+
+                stQueryH = "Select * from ""@EP_EN0"" where ""Code""=" & Entrega
+                oRecSetH.DoQuery(stQueryH)
+
+                If oRecSetH.RecordCount > 0 Then
+
+                    findDelivery(FormUID, Entrega)
+
+                End If
 
             End If
 
