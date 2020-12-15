@@ -21,7 +21,7 @@
         Dim oDataTable As SAPbouiCOM.DataTable
         Dim stQueryH, stQueryH2, stQueryH3 As String
         Dim oRecSetH, oRecSetH2, oRecSetH3 As SAPbobsCOM.Recordset
-        Dim Driver, User, Truck, DocNum, Invoice, Estatus, IFechas, DFechas, SFechas, LDriver As String
+        Dim Driver, User, Truck, DocNum, Invoice, Estatus, IFechas, DFechas, SFechas, LDriver, STime As String
         Dim DFecha, IFecha, SFecha As Date
         Dim Code, Linea As Integer
 
@@ -75,8 +75,9 @@
                         Estatus = oDataTable.GetValue("Estatus", i)
                         IFechas = IFecha.Year & "-" & IFecha.Month & "-" & IFecha.Day
                         SFechas = SFecha.Year & "-" & SFecha.Month & "-" & SFecha.Day
+                        STime = oDataTable.GetValue("Hora de Escaneo", i)
 
-                        stQueryH2 = "INSERT INTO ""@EP_EN1"" VALUES (" & Code & "," & Code & "," & DocNum & "," & Linea & "," & Invoice & ",'" & IFechas & "','" & SFechas & "','" & Estatus & "','" & LDriver & "')"
+                        stQueryH2 = "INSERT INTO ""@EP_EN1"" VALUES (" & Code & "," & Code & "," & DocNum & "," & Linea & "," & Invoice & ",'" & IFechas & "','" & SFechas & "','" & Estatus & "','" & LDriver & "','" & STime & "')"
                         oRecSetH2.DoQuery(stQueryH2)
 
                     End If

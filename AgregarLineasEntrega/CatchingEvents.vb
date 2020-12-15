@@ -230,6 +230,7 @@ Friend Class CatchingEvents
     Private Sub FrmEntregaSBOControllerAfter(ByVal FormUID As String, ByVal pVal As SAPbouiCOM.ItemEvent)
 
         Dim oDeliveries As Deliveries
+        Dim otekDel As FrmtekDel
         Dim oGrid As SAPbouiCOM.Grid
         Dim oForm As SAPbouiCOM.Form
         Dim oDataTable As SAPbouiCOM.DataTable
@@ -267,7 +268,13 @@ Friend Class CatchingEvents
 
                                     Select Case pVal.ColUID
 
-                                        Case "Estatus"
+                                        Case "Fecha Factura"
+                                            oDataTable = oGrid.DataTable
+
+                                            otekDel = New FrmtekDel
+                                            otekDel.InsertarHora(pVal.Row, FormUID)
+
+                                        Case "Hora de Escaneo"
 
                                             oDataTable = oGrid.DataTable
 

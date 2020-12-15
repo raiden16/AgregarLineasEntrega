@@ -207,14 +207,17 @@ Public Class FrmtekDel
         Dim stQuery As String = ""
         Dim oRecSet As SAPbobsCOM.Recordset
         Dim oCombo As SAPbouiCOM.ComboBoxColumn
+        Dim Fecha As String
 
         Try
 
             oGrid = coForm.Items.Item("11").Specific
             oGrid.DataTable.Clear()
 
+            Fecha = Now.Day.ToString + "/" + Now.Month.ToString + "/" + Now.Year.ToString
+
             oRecSet = cSBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
-            stQuery = "Select 1 as ""#"",'                         ' as ""Factura"", '          ' as ""Fecha Factura"", '          ' as ""Fecha Escaneo"", '          ' as ""Estatus"" from dummy"
+            stQuery = "Select 1 as ""#"",'                         ' as ""Factura"", '          ' as ""Fecha Factura"", '" & Fecha & "' as ""Fecha Escaneo"", 'Escaneado' as ""Estatus"",'     ' as ""Hora de Escaneo"" from dummy"
             oGrid.DataTable.ExecuteQuery(stQuery)
 
             oGrid.Columns.Item(4).Type = SAPbouiCOM.BoGridColumnType.gct_ComboBox
@@ -225,6 +228,7 @@ Public Class FrmtekDel
             oCombo.ValidValues.Add("Cambio", "Cambio")
             oCombo.ValidValues.Add("Retenido", "Retenido")
             oCombo.ValidValues.Add("Cancelado", "Cancelado")
+            oCombo.ValidValues.Add("Cliente", "Cliente")
 
             oGrid.Columns.Item(1).Editable = True
             oGrid.Columns.Item(2).Editable = True
@@ -234,6 +238,8 @@ Public Class FrmtekDel
 
             For i = 1 To 19
                 oGrid.DataTable.SetValue("#", i, i + 1)
+                oGrid.DataTable.SetValue("Fecha Escaneo", i, Fecha)
+                oGrid.DataTable.SetValue("Estatus", i, "Escaneado")
             Next
 
             ' Set columns size
@@ -242,13 +248,70 @@ Public Class FrmtekDel
             oGrid.Columns.Item(2).Width = 100
             oGrid.Columns.Item(3).Width = 100
             oGrid.Columns.Item(4).Width = 100
+            oGrid.Columns.Item(5).Width = 100
             oGrid.Columns.Item(0).Editable = False
+            oGrid.Columns.Item(3).Editable = False
+            oGrid.Columns.Item(4).Editable = False
+            'oGrid.Columns.Item(5).Visible = False
 
             Return 0
 
         Catch ex As Exception
 
             MsgBox("FrmtekDel. fallo la carga previa de la forma AgregarLineas: " & ex.Message)
+
+        Finally
+
+            oGrid = Nothing
+
+        End Try
+
+    End Function
+
+    '----- carga los procesos de carga
+    Public Function InsertarHora(ByVal i As String, ByVal FormUID As String)
+        Dim coForm As SAPbouiCOM.Form
+        Dim oGrid As SAPbouiCOM.Grid
+        Dim oDataTable As SAPbouiCOM.DataTable
+        Dim Hora, CHoras, CMinutos, Horas, Minutos As String
+
+        Try
+
+            coForm = cSBOApplication.Forms.Item(FormUID)
+            oGrid = coForm.Items.Item("11").Specific
+            oDataTable = oGrid.DataTable
+            CHoras = Len(Now.Hour.ToString)
+
+            If CHoras = "1" Then
+
+                Horas = "0" + Now.Hour.ToString
+
+            Else
+
+                Horas = Now.Hour.ToString
+
+            End If
+
+            CMinutos = Len(Now.Minute.ToString)
+
+            If CMinutos = "1" Then
+
+                Minutos = "0" + Now.Minute.ToString
+
+            Else
+
+                Minutos = Now.Minute.ToString
+
+            End If
+
+            Hora = Horas + Minutos
+            oDataTable.SetValue("Hora de Escaneo", i, Hora)
+
+            Return 0
+
+        Catch ex As Exception
+
+            MsgBox("FrmtekDel. fallo la carga de la Hora de Escaneo, AgregarLineas: " & ex.Message)
 
         Finally
 
