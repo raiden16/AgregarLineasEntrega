@@ -217,42 +217,45 @@ Public Class FrmtekDel
             Fecha = Now.Day.ToString + "/" + Now.Month.ToString + "/" + Now.Year.ToString
 
             oRecSet = cSBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
-            stQuery = "Select 1 as ""#"",'                         ' as ""Factura"", '          ' as ""Fecha Factura"", '" & Fecha & "' as ""Fecha Escaneo"", 'Escaneado' as ""Estatus"",'     ' as ""Hora de Escaneo"" from dummy"
+            'stQuery = "Select 1 as ""#"",'                         ' as ""Factura"", '          ' as ""Fecha Factura"", '" & Fecha & "' as ""Fecha Escaneo"", 'Escaneado' as ""Estatus"",'     ' as ""Hora de Escaneo"" from dummy"
+            stQuery = "call AgregarLineasDel()"
             oGrid.DataTable.ExecuteQuery(stQuery)
 
-            oGrid.Columns.Item(4).Type = SAPbouiCOM.BoGridColumnType.gct_ComboBox
-            oCombo = oGrid.Columns.Item(4)
+            'oGrid.Columns.Item(4).Type = SAPbouiCOM.BoGridColumnType.gct_ComboBox
+            'oCombo = oGrid.Columns.Item(4)
 
-            oCombo.ValidValues.Add("", "")
-            oCombo.ValidValues.Add("Escaneado", "Escaneado")
-            oCombo.ValidValues.Add("Cambio", "Cambio")
-            oCombo.ValidValues.Add("Retenido", "Retenido")
-            oCombo.ValidValues.Add("Cancelado", "Cancelado")
-            oCombo.ValidValues.Add("Cliente", "Cliente")
+            'oCombo.ValidValues.Add("", "")
+            'oCombo.ValidValues.Add("Escaneado", "Escaneado")
+            'oCombo.ValidValues.Add("Cambio", "Cambio")
+            'oCombo.ValidValues.Add("Retenido", "Retenido")
+            'oCombo.ValidValues.Add("Cancelado", "Cancelado")
+            'oCombo.ValidValues.Add("Cliente", "Cliente")
 
-            oGrid.Columns.Item(1).Editable = True
-            oGrid.Columns.Item(2).Editable = True
-            oGrid.Columns.Item(3).Editable = True
+            'oGrid.Columns.Item(1).Editable = True
+            'oGrid.Columns.Item(2).Editable = True
+            'oGrid.Columns.Item(3).Editable = True
 
-            oGrid.DataTable.Rows.Add(19)
+            'oGrid.DataTable.Rows.Add(19)
 
-            For i = 1 To 19
-                oGrid.DataTable.SetValue("#", i, i + 1)
-                oGrid.DataTable.SetValue("Fecha Escaneo", i, Fecha)
-                oGrid.DataTable.SetValue("Estatus", i, "Escaneado")
-            Next
+            'For i = 1 To 19
+            '    oGrid.DataTable.SetValue("#", i, i + 1)
+            '    oGrid.DataTable.SetValue("Fecha Escaneo", i, Fecha)
+            '    oGrid.DataTable.SetValue("Estatus", i, "Escaneado")
+            'Next
 
             ' Set columns size
-            oGrid.Columns.Item(0).Width = 30
-            oGrid.Columns.Item(1).Width = 100
-            oGrid.Columns.Item(2).Width = 100
-            oGrid.Columns.Item(3).Width = 100
-            oGrid.Columns.Item(4).Width = 100
-            oGrid.Columns.Item(5).Width = 100
+            'oGrid.Columns.Item(0).Width = 30
+            'oGrid.Columns.Item(1).Width = 100
+            'oGrid.Columns.Item(2).Width = 100
+            'oGrid.Columns.Item(3).Width = 100
+            'oGrid.Columns.Item(4).Width = 100
+            'oGrid.Columns.Item(5).Width = 100
             oGrid.Columns.Item(0).Editable = False
+            'oGrid.Columns.Item(1).Editable = True
+            'oGrid.Columns.Item(2).Editable = True
             oGrid.Columns.Item(3).Editable = False
             oGrid.Columns.Item(4).Editable = False
-            'oGrid.Columns.Item(5).Visible = False
+            'oGrid.Columns.Item(5).Visible = True
 
             Return 0
 

@@ -214,7 +214,8 @@ Public Class FrmtekSch
             oGrid.DataTable.Clear()
 
             oRecSet = cSBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
-            stQuery = "Select 1 as ""#"",'                         ' as ""Factura"", '          ' as ""Fecha Factura"", '          ' as ""Fecha Escaneo"", '          ' as ""Estatus"" from dummy"
+            'stQuery = "Select 1 as ""#"",'                         ' as ""Factura"", '          ' as ""Fecha Factura"", '          ' as ""Fecha Escaneo"", '          ' as ""Estatus"" from dummy"
+            stQuery = "Call AgregarLineasSch()"
             oGrid.DataTable.ExecuteQuery(stQuery)
 
             oGrid.Columns.Item(4).Type = SAPbouiCOM.BoGridColumnType.gct_ComboBox
@@ -226,22 +227,22 @@ Public Class FrmtekSch
             oCombo.ValidValues.Add("Retenido", "Retenido")
             oCombo.ValidValues.Add("Cancelado", "Cancelado")
 
-            oGrid.Columns.Item(1).Editable = True
-            oGrid.Columns.Item(2).Editable = True
-            oGrid.Columns.Item(3).Editable = True
+            'oGrid.Columns.Item(1).Editable = True
+            'oGrid.Columns.Item(2).Editable = True
+            'oGrid.Columns.Item(3).Editable = True
 
-            oGrid.DataTable.Rows.Add(19)
+            'oGrid.DataTable.Rows.Add(19)
 
-            For i = 1 To 19
-                oGrid.DataTable.SetValue("#", i, i + 1)
-            Next
+            'For i = 1 To 19
+            '    oGrid.DataTable.SetValue("#", i, i + 1)
+            'Next
 
             ' Set columns size
-            oGrid.Columns.Item(0).Width = 30
-            oGrid.Columns.Item(1).Width = 100
-            oGrid.Columns.Item(2).Width = 100
-            oGrid.Columns.Item(3).Width = 100
-            oGrid.Columns.Item(4).Width = 100
+            'oGrid.Columns.Item(0).Width = 30
+            'oGrid.Columns.Item(1).Width = 100
+            'oGrid.Columns.Item(2).Width = 100
+            'oGrid.Columns.Item(3).Width = 100
+            'oGrid.Columns.Item(4).Width = 100
             oGrid.Columns.Item(0).Editable = False
 
             Return 0
